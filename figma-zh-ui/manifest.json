@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "Figma 简体中文界面",
+  "short_name": "Figma 中文界面",
+  "version": "0.1.1",
+  "description": "离线翻译 Figma 固定界面，保护文件、画布、图层、评论及其他用户内容。",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://www.figma.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_title": "Figma 简体中文界面",
+    "default_popup": "src/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://www.figma.com/*"
+      ],
+      "js": [
+        "generated/dictionary.js",
+        "src/official-overrides.js",
+        "src/core.js",
+        "src/content.js"
+      ],
+      "css": [
+        "src/content.css"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

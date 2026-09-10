@@ -1,0 +1,53 @@
+:root {
+  color-scheme: light dark;
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC", sans-serif;
+  color: #1e1e1e;
+  background: #f5f5f5;
+}
+* { box-sizing: border-box; }
+body { width: 340px; margin: 0; background: #f5f5f5; }
+main { padding: 16px; }
+.hero { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.hero h1 { margin: 0; font-size: 16px; line-height: 1.35; }
+.hero p { margin: 3px 0 0; color: #777; font-size: 11px; }
+.figma-mark { display: grid; grid-template: repeat(3, 10px) / repeat(2, 10px); width: 28px; height: 38px; align-content: center; }
+.figma-mark i { display: block; width: 10px; height: 10px; }
+.figma-mark i:nth-child(1) { border-radius: 5px 0 0 5px; background: #f24e1e; }
+.figma-mark i:nth-child(2) { border-radius: 0 5px 5px 0; background: #ff7262; }
+.figma-mark i:nth-child(3) { border-radius: 5px 0 0 5px; background: #a259ff; }
+.figma-mark i:nth-child(4) { border-radius: 50%; background: #1abcfe; }
+.figma-mark i:nth-child(5) { border-radius: 5px 0 5px 5px; background: #0acf83; }
+.panel { overflow: hidden; border: 1px solid #d6d6d6; border-radius: 9px; background: #fff; }
+.controls label { display: flex; min-height: 54px; padding: 9px 11px; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #e5e5e5; }
+.controls label:last-child { border-bottom: 0; }
+.controls span { display: flex; flex-direction: column; gap: 2px; }
+.controls strong { font-size: 12px; font-weight: 600; }
+.controls small { color: #777; font-size: 10px; }
+input[role="switch"] { width: 34px; height: 19px; margin: 0; appearance: none; border: 1px solid #aaa; border-radius: 999px; background: #aaa; cursor: pointer; transition: 120ms ease; }
+input[role="switch"]::after { display: block; width: 13px; height: 13px; margin: 2px; border-radius: 50%; background: #fff; content: ""; transition: transform 120ms ease; }
+input[role="switch"]:checked { border-color: #18a0fb; background: #18a0fb; }
+input[role="switch"]:checked::after { transform: translateX(15px); }
+input[role="switch"]:focus-visible { outline: 2px solid #18a0fb; outline-offset: 2px; }
+.metrics { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin: 9px 0; }
+.metrics article { padding: 9px 6px; border: 1px solid #d6d6d6; border-radius: 8px; background: #fff; text-align: center; }
+.metrics strong { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+.metrics span { color: #777; font-size: 10px; }
+.source { padding: 6px 10px; }
+.source div { display: flex; padding: 4px 0; justify-content: space-between; gap: 12px; font-size: 10px; }
+.source span { color: #777; }
+.source strong { overflow: hidden; max-width: 190px; text-overflow: ellipsis; white-space: nowrap; }
+.actions { display: grid; grid-template-columns: 1.2fr 1.2fr .8fr; gap: 6px; margin-top: 10px; }
+button { min-height: 31px; padding: 5px 8px; border: 1px solid #0d8de3; border-radius: 6px; color: #fff; background: #18a0fb; font: inherit; font-size: 11px; font-weight: 600; cursor: pointer; }
+button:hover { background: #0d8de3; }
+button.quiet { color: #333; border-color: #d6d6d6; background: #fff; }
+button.quiet:hover { background: #eee; }
+button:disabled { opacity: .48; cursor: default; }
+.privacy { margin: 10px 0 0; color: #777; font-size: 9px; text-align: center; }
+@media (prefers-color-scheme: dark) {
+  :root, body { color: #f5f5f5; background: #1e1e1e; }
+  .panel, .metrics article { border-color: #444; background: #2c2c2c; }
+  .controls label { border-color: #444; }
+  .hero p, .controls small, .metrics span, .source span, .privacy { color: #aaa; }
+  button.quiet { color: #f5f5f5; border-color: #555; background: #383838; }
+  button.quiet:hover { background: #444; }
+}

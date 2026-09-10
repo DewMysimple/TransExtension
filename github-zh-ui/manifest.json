@@ -1,0 +1,38 @@
+{
+  "manifest_version": 3,
+  "name": "GitHub 简体中文界面",
+  "short_name": "GitHub 中文界面",
+  "version": "0.1.0",
+  "description": "离线翻译 GitHub 固定界面，跳过代码、README、评论和其他用户内容。",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://github.com/*"
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "action": {
+    "default_title": "GitHub 简体中文界面",
+    "default_popup": "src/popup.html"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://github.com/*"
+      ],
+      "js": [
+        "generated/dictionary.js",
+        "src/official-overrides.js",
+        "src/core.js",
+        "src/content.js"
+      ],
+      "css": [
+        "src/content.css"
+      ],
+      "run_at": "document_start"
+    }
+  ]
+}

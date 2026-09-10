@@ -1,0 +1,26 @@
+#github-zh-ui-original-tooltip {
+  position: fixed;
+  z-index: 2147483647;
+  display: none;
+  max-width: min(420px, calc(100vw - 24px));
+  padding: 6px 9px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 6px;
+  color: #f0f6fc;
+  background: #24292f;
+  box-shadow: 0 8px 24px rgba(140, 149, 159, 0.28);
+  font: 12px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  letter-spacing: normal;
+  text-align: left;
+  white-space: normal;
+  pointer-events: none;
+}
+
+#github-zh-ui-original-tooltip[data-visible="true"] {
+  display: block;
+}
+
+html[data-github-zh-audit="true"] [data-github-zh-unknown="true"] {
+  outline: 1px dashed color-mix(in srgb, #bf8700 75%, transparent);
+  outline-offset: 2px;
+}

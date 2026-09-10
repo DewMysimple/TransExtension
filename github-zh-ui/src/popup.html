@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GitHub 简体中文界面</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <main>
+    <header class="hero">
+      <div class="mark" aria-hidden="true">文</div>
+      <div>
+        <h1>GitHub 中文界面</h1>
+        <p id="page-status">正在读取当前页面…</p>
+      </div>
+    </header>
+
+    <section class="panel controls" aria-label="扩展设置">
+      <label>
+        <span><strong>界面中文化</strong><small>关闭后恢复原始英文</small></span>
+        <input id="enabled" type="checkbox" role="switch">
+      </label>
+      <label>
+        <span><strong>悬停显示英文</strong><small>延迟 0.4 秒显示原文</small></span>
+        <input id="show-original" type="checkbox" role="switch">
+      </label>
+      <label>
+        <span><strong>本地漏译审计</strong><small>仅保存词条与页面类别</small></span>
+        <input id="audit-enabled" type="checkbox" role="switch">
+      </label>
+    </section>
+
+    <section class="metrics" aria-label="当前页面统计">
+      <article><strong id="translated-count">—</strong><span>已翻译</span></article>
+      <article><strong id="unknown-count">—</strong><span>本页漏译</span></article>
+      <article><strong id="audit-total">—</strong><span>审计总数</span></article>
+    </section>
+
+    <section class="panel source">
+      <div><span>词库来源</span><strong id="source-version">—</strong></div>
+      <div><span>生成时间</span><strong id="source-date">—</strong></div>
+    </section>
+
+    <div class="actions">
+      <button id="rescan" type="button">重新扫描</button>
+      <button id="export-audit" type="button">导出漏译</button>
+      <button id="clear-audit" class="quiet" type="button">清空</button>
+    </div>
+
+    <p class="privacy">离线运行 · 不读取 Cookie · 不上传页面内容</p>
+  </main>
+  <script src="../generated/dictionary.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

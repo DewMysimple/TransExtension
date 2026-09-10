@@ -1,0 +1,42 @@
+{
+  "generatedAt": "2026-08-01T18:28:02.721Z",
+  "sources": [
+    {
+      "id": "github-chinese",
+      "repo": "maboloshi/github-chinese",
+      "branch": "gh-pages",
+      "sha": "7e15a1492eb5be9dbdb75b479eeb540c034e5eba",
+      "committedAt": "2026-07-29T01:18:18Z",
+      "commitUrl": "https://github.com/maboloshi/github-chinese/commit/7e15a1492eb5be9dbdb75b479eeb540c034e5eba"
+    },
+    {
+      "id": "github-docs",
+      "repo": "github/docs",
+      "branch": "main",
+      "sha": "a385982155efc1c234b3fb9fabe748873af300c3",
+      "committedAt": "2026-07-31T20:49:57Z",
+      "commitUrl": "https://github.com/github/docs/commit/a385982155efc1c234b3fb9fabe748873af300c3"
+    },
+    {
+      "id": "primer-react",
+      "repo": "primer/react",
+      "branch": "main",
+      "sha": "da3df9aba582c7bcedbe69f1bdc5ab64ac90d32b",
+      "committedAt": "2026-07-31T16:52:35Z",
+      "commitUrl": "https://github.com/primer/react/commit/da3df9aba582c7bcedbe69f1bdc5ab64ac90d32b"
+    },
+    {
+      "id": "primer-view-components",
+      "repo": "primer/view_components",
+      "branch": "main",
+      "sha": "0c0462d3a2e50fdcc9e0ecab9429aeb001c682cf",
+      "committedAt": "2026-07-31T20:25:35Z",
+      "commitUrl": "https://github.com/primer/view_components/commit/0c0462d3a2e50fdcc9e0ecab9429aeb001c682cf"
+    }
+  ],
+  "officialTerminology": [
+    "https://docs.github.com/en",
+    "https://docs.github.com/zh"
+  ],
+  "runtimeNetworkRequests": false
+}

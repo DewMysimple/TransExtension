@@ -1,0 +1,17 @@
+{
+  "generatedAt": "2026-08-13T14:19:40.701Z",
+  "upstream": {
+    "repo": "Figma-Cool/figmaCN",
+    "branch": "master",
+    "sha": "056020aff4598767a4b37aa9681c51ebc1112dfe",
+    "committedAt": "2026-08-13T08:54:21Z",
+    "commitUrl": "https://github.com/Figma-Cool/figmaCN/commit/056020aff4598767a4b37aa9681c51ebc1112dfe",
+    "license": "GPL-3.0"
+  },
+  "officialReferences": [
+    "https://help.figma.com/hc/en-us/articles/14381406380183-Guide-to-the-file-browser",
+    "https://help.figma.com/hc/en-us/articles/15297425105303-Explore-design-files",
+    "https://help.figma.com/hc/en-us/articles/360039831974-Explore-the-navigation-bar-and-left-sidebar"
+  ],
+  "runtimeNetworkRequests": false
+}

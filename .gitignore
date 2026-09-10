@@ -1,0 +1,22 @@
+# Dependencies and build outputs
+**/node_modules/
+**/dist/
+**/coverage/
+
+# Generated transient reports; generated dictionaries and source metadata stay tracked
+**/generated/update-report.json
+**/generated/*.tmp
+
+# Local environment and logs
+.env
+.env.*
+!.env.example
+*.log
+
+# Editor, OS, and Python caches
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+**/__pycache__/
+*.py[cod]
