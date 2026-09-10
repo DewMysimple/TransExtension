@@ -3,7 +3,7 @@ type: moc
 status: active
 kind: process
 importance: high
-updated: 2026-09-10
+updated: 2026-09-11
 topic: trans-extension-work-log-index
 project: trans-extension
 affected_projects: [figma-zh-ui, github-zh-ui]
@@ -17,11 +17,12 @@ supersedes: null
 
 | 日期 | 项目 | 影响项目 | 类型 | 目标 | 页面状态 | 主题 | 日志 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-09-11 | trans-extension | figma-zh-ui, github-zh-ui | maintenance | 将工程记忆组件从仓库根层散列目录收拢到 `wiki_memory/`，保持根项目治理入口和插件目录边界清晰。 | archived | trans-extension-memory-directory-layout | [[日志/2026-09-11-将工程记忆收拢至wiki_memory.md\|2026-09-11｜将工程记忆收拢至 wiki_memory]] |
 | 2026-09-10 | trans-extension | figma-zh-ui, github-zh-ui | maintenance | 建立根级统一工程记忆、分层 Agent 规则和根 Git 仓库，并完成首次远程交付。 | archived | trans-extension-initialize-memory-and-git | [[日志/2026-09-10-初始化统一工程记忆与Git仓库.md\|2026-09-10｜初始化统一工程记忆与 Git 仓库]] |
 
 ## 使用方式
 
-- 由 `python 工具/memory_lint.py index` 生成或刷新。
+- 由 `python wiki_memory/工具/memory_lint.py index` 生成或刷新。
 - 查询时先阅读当前状态，再按项目、类型和关键词定位日志。
 - 历史日志是审计记录，不应直接覆盖当前状态。
 

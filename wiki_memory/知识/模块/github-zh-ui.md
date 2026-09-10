@@ -41,8 +41,8 @@ supersedes: null
 
 ## 开发入口
 
-- 用户与安装说明：[`github-zh-ui/README.md`](../../github-zh-ui/README.md)
-- 局部工程规则：[`github-zh-ui/AGENTS.md`](../../github-zh-ui/AGENTS.md)
+- 用户与安装说明：[`github-zh-ui/README.md`](../../../github-zh-ui/README.md)
+- 局部工程规则：[`github-zh-ui/AGENTS.md`](../../../github-zh-ui/AGENTS.md)
 - 通用验证流程：[[知识/流程/开发验证与发布|开发验证与发布]]
 
 ## 常见陷阱

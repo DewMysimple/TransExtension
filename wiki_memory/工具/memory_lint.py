@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """检查 TransExtension 根级工程记忆并重建工作日志索引。
 
-只使用 Python 标准库。默认记忆根目录是本文件上两级的仓库根。
+只使用 Python 标准库。默认记忆根目录是本文件上两级的 `wiki_memory/` 目录。
 
 用法：
-    python 工具/memory_lint.py check
-    python 工具/memory_lint.py index
-    python 工具/memory_lint.py --root <目录> check
+    python wiki_memory/工具/memory_lint.py check
+    python wiki_memory/工具/memory_lint.py index
+    python wiki_memory/工具/memory_lint.py --root <记忆目录> check
 """
 
 from __future__ import annotations
@@ -240,6 +240,21 @@ def canonical_relative(root: Path, source: Path, target: str) -> Path | None:
         return None
 
 
+def canonical_absolute(root: Path, source: Path, target: str) -> Path | None:
+    resolved = resolve_link(source, target)
+    if resolved is None:
+        return None
+    return (root / resolved).resolve()
+
+
+def is_inside(path: Path, parent: Path) -> bool:
+    try:
+        path.relative_to(parent.resolve())
+        return True
+    except ValueError:
+        return False
+
+
 def display_title(page: Page) -> str:
     for line in page.body.splitlines():
         if line.startswith("# "):
@@ -354,11 +369,11 @@ def validate_pages(root: Path, pages: list[Page]) -> list[str]:
     for page in pages:
         validate_metadata(page, errors)
         for target in all_page_links(page):
-            relative = canonical_relative(root, page.path, target)
-            if relative is None:
+            absolute = canonical_absolute(root, page.path, target)
+            if absolute is None or not is_inside(absolute, root.parent):
                 errors.append(f"{page.rel}: link escapes repository or is invalid '{target}'")
                 continue
-            if not (root / relative).is_file():
+            if not absolute.is_file():
                 errors.append(f"{page.rel}: broken link '{target}'")
 
         for target in supersedes_links(page):
@@ -428,7 +443,7 @@ def validate_pages(root: Path, pages: list[Page]) -> list[str]:
                 indexed_logs.append(relative.as_posix())
         if sorted(indexed_logs) != expected_logs:
             errors.append(
-                "work-log MOC is stale; run 'python 工具/memory_lint.py index' before check"
+                "work-log MOC is stale; run 'python wiki_memory/工具/memory_lint.py index' before check"
             )
         ordered_logs = sorted(log_pages(pages), key=log_sort_key, reverse=True)
         expected_rows = [render_log_row(page) for page in ordered_logs]
@@ -443,7 +458,7 @@ def validate_pages(root: Path, pages: list[Page]) -> list[str]:
         )
         if actual_rows != expected_rows or str(moc_page.fields.get("updated", "")) != latest:
             errors.append(
-                "work-log MOC rows or update date are stale; run 'python 工具/memory_lint.py index' before check"
+                "work-log MOC rows or update date are stale; run 'python wiki_memory/工具/memory_lint.py index' before check"
             )
 
     incoming: dict[str, int] = {
@@ -549,7 +564,7 @@ def index_logs(root: Path, pages: list[Page]) -> Path:
             "",
             "## 使用方式",
             "",
-            "- 由 `python 工具/memory_lint.py index` 生成或刷新。",
+            "- 由 `python wiki_memory/工具/memory_lint.py index` 生成或刷新。",
             "- 查询时先阅读当前状态，再按项目、类型和关键词定位日志。",
             "- 历史日志是审计记录，不应直接覆盖当前状态。",
             "",

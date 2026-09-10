@@ -19,12 +19,15 @@ TransExtension/
 ├── README.md                 # 总项目入口
 ├── figma-zh-ui/              # Figma 翻译插件及其局部 AGENTS/README
 ├── github-zh-ui/             # GitHub 翻译插件及其局部 AGENTS/README
-├── 当前状态/                 # 当前有效事实
-├── 决策/                     # 已确认工程决策（ADR）
-├── 知识/                     # 模块、流程、规范与运维知识
-├── 日志/                     # 全仓统一的追加式工作日志
-├── 模板/                     # 工程记忆页面模板
-└── 工具/memory_lint.py       # 记忆检查与日志索引工具
+└── wiki_memory/              # 集中式工程记忆组件
+    ├── AGENTS.md             # 记忆维护协议
+    ├── README.md             # 记忆系统入口
+    ├── 当前状态/             # 当前有效事实
+    ├── 决策/                 # 已确认工程决策（ADR）
+    ├── 知识/                 # 模块、流程、规范与运维知识
+    ├── 日志/                 # 全仓统一的追加式工作日志
+    ├── 模板/                 # 工程记忆页面模板
+    └── 工具/memory_lint.py   # 记忆检查与日志索引工具
 ```
 
 子项目的 `AGENTS.md` 继承根规则，只补充目标站点特有的保护边界、文件职责与验证要求；工程记忆不在子项目内重复建设。
@@ -52,7 +55,7 @@ npm run package
 
 ## 工程记忆
 
-工程记忆直接维护在仓库根层，历史日志只有一个物理目录。每个受管 Markdown 页都通过 Front Matter 的 `project` 标识归属：
+工程记忆集中维护在根目录的 `wiki_memory/` 下，历史日志只有一个物理目录。每个受管 Markdown 页都通过 Front Matter 的 `project` 标识归属：
 
 - `trans-extension`：根治理、共享流程或跨插件任务；
 - `figma-zh-ui`：只影响 Figma 插件；
@@ -60,18 +63,19 @@ npm run package
 
 跨插件任务以 `project: trans-extension` 记录，并在 `affected_projects` 中列出受影响插件。常用入口：
 
-- [项目概览](./当前状态/项目概览.md)
-- [系统架构](./当前状态/系统架构.md)
-- [当前约束](./当前状态/当前约束.md)
-- [工作日志索引](./日志/MOC_工作日志.md)
-- [工程决策](./决策/README.md)
+- [工程记忆入口](./wiki_memory/README.md)
+- [项目概览](./wiki_memory/当前状态/项目概览.md)
+- [系统架构](./wiki_memory/当前状态/系统架构.md)
+- [当前约束](./wiki_memory/当前状态/当前约束.md)
+- [工作日志索引](./wiki_memory/日志/MOC_工作日志.md)
+- [工程决策](./wiki_memory/决策/README.md)
 - [记忆维护协议](./AGENTS.md#工程记忆协议)
 
 检查或刷新工程记忆：
 
 ```powershell
-python 工具/memory_lint.py index
-python 工具/memory_lint.py check
+python wiki_memory/工具/memory_lint.py index
+python wiki_memory/工具/memory_lint.py check
 ```
 
 ## Git 交付约束

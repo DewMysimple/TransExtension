@@ -1,6 +1,6 @@
 # AGENTS.md — github-zh-ui 局部规则
 
-本文件适用于 `github-zh-ui/`，并继承仓库根 `../AGENTS.md`。工程记忆仍统一写入根目录；属于本插件的页面和日志使用 `project: github-zh-ui`。
+本文件适用于 `github-zh-ui/`，并继承仓库根 `../AGENTS.md`。工程记忆统一写入根目录的 `wiki_memory/`；属于本插件的页面和日志使用 `project: github-zh-ui`。
 
 ## 产品不变量
 

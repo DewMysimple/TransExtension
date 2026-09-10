@@ -51,4 +51,4 @@ supersedes: null
 
 ## 索引
 
-运行 `python 工具/memory_lint.py index` 生成 [`MOC_工作日志.md`](./MOC_工作日志.md)。MOC 同时显示项目、影响项目和任务类型，是唯一工作日志索引。
+从仓库根目录运行 `python wiki_memory/工具/memory_lint.py index` 生成 [`MOC_工作日志.md`](./MOC_工作日志.md)。MOC 同时显示项目、影响项目和任务类型，是唯一工作日志索引。
