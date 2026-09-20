@@ -1,6 +1,7 @@
 (function runPopup() {
   'use strict';
 
+  const core = globalThis.GitHubZhCore;
   const DEFAULT_SETTINGS = Object.freeze({ enabled: true, showOriginal: true, auditEnabled: true });
   const elements = {
     enabled: document.getElementById('enabled'),
@@ -117,7 +118,7 @@
     const payload = {
       exportedAt: new Date().toISOString(),
       source: globalThis.GITHUB_ZH_DICTIONARY?.meta ?? null,
-      entries: auditEntries
+      entries: core.sanitizeAuditEntries(auditEntries)
     };
     const blob = new Blob([`${JSON.stringify(payload, null, 2)}\n`], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -141,7 +142,7 @@
     activeTab = tab ?? null;
     const stored = await chrome.storage.local.get(['settings', 'auditEntries']);
     settings = { ...DEFAULT_SETTINGS, ...stored.settings };
-    auditEntries = Array.isArray(stored.auditEntries) ? stored.auditEntries : [];
+    auditEntries = core.sanitizeAuditEntries(stored.auditEntries);
     renderSettings();
     renderAuditTotal();
     renderSource();

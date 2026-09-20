@@ -17,6 +17,10 @@ TransExtension 是面向特定网站的简体中文界面翻译扩展集合。�
 TransExtension/
 ├── AGENTS.md                 # 全仓 Agent、工程记忆与交付规则
 ├── README.md                 # 总项目入口
+├── package.json              # 双插件统一质量检查入口，无运行时依赖
+├── scripts/                  # 仅用于开发的跨插件检查编排
+├── tests/                    # 两个独立验证器的共享契约回归
+├── docs/maintenance.md       # 漏译定位、修改边界与回归方法
 ├── figma-zh-ui/              # Figma 翻译插件及其局部 AGENTS/README
 ├── github-zh-ui/             # GitHub 翻译插件及其局部 AGENTS/README
 └── wiki_memory/              # 集中式工程记忆组件
@@ -34,15 +38,19 @@ TransExtension/
 
 ## 开发与验证
 
-需要 Node.js 22 或更高版本。进入对应插件目录后执行：
+需要 Node.js 22 或更高版本，以及 Python 3（工程记忆检查使用标准库）。在仓库根目录执行：
 
 ```powershell
-npm ci
-npm test
-npm run verify
+npm ci --prefix figma-zh-ui
+npm ci --prefix github-zh-ui
+npm run check
 ```
 
-`verify` 要求 `generated/sources.json` 在最近 24 小时内生成。普通源码或文档改动不应只为通过该时效门槛而刷新上游；更新词库或准备发布时，按以下顺序执行：
+根目录没有依赖，无需安装；两个插件分别使用自己的锁文件和 `node_modules`。`check` 依次执行门禁回归、两个插件的 `npm test`、`verify:offline` 和工程记忆检查；任何一步失败都会返回非零状态，并继续展示其他检查结果。GitHub Actions 在 Windows 和 Linux 的 Node.js 22 环境运行相同入口。
+
+日常只修改一个插件时，可进入其目录运行 `npm test` 和 `npm run verify:offline`。离线静态验证检查最小权限、主机范围、内容脚本加载顺序、版本一致性、交付文件、来源结构、词库规模、JavaScript 语法和常见联网调用；不会下载或改写词库。静态扫描是回归门禁，不能替代代码审查和浏览器验收。
+
+`npm run verify` 保留发布要求，额外检查 `generated/sources.json` 在最近 24 小时内生成。普通源码或文档改动不应只为通过该时效门槛而刷新上游；更新词库或准备发布时，在对应插件目录按以下顺序执行：
 
 ```powershell
 npm run update:sources
@@ -51,7 +59,15 @@ npm run verify
 npm run package
 ```
 
-完整安装、权限与人工验收步骤见各插件自己的 README。
+漏译问题应先判断是缺词、上下文保护、文本结构还是动态生命周期问题，再选择修改位置；具体流程与回归要求见 [维护指南](./docs/maintenance.md)。完整安装、权限与人工验收步骤见各插件自己的 README。自动检查通过不代表真实页面已全部覆盖或已通过发布验收。
+
+本机装有 Chrome 或 Edge 时，可以额外运行浏览器合成冒烟，参数使用浏览器可执行文件的绝对路径，例如：
+
+```powershell
+node scripts/browser-smoke.mjs "C:\Program Files\Google\Chrome\Application\chrome.exe"
+```
+
+也可将参数替换为本机 `msedge.exe` 的绝对路径。该脚本在本地合成页面运行当前词库和内容脚本，使用 Chrome API 替身，不依赖登录会话、不加载已安装扩展，也不进入默认检查或 CI。真实 Figma/GitHub 页面仍须按子项目 README 人工验收；未登录或无法访问的场景应记录为未验收。
 
 ## 工程记忆
 

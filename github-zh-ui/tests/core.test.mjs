@@ -41,6 +41,25 @@ test('页面分类会选择个人、仓库和组织设置词库', () => {
   assert.equal(core.classifyPage('/organizations/acme/settings/profile', dictionary.scopes).pageType, 'orgs/settings/profile');
 });
 
+test('审计页面类别剔除动态路径，同时保留词库范围匹配', () => {
+  const cases = [
+    ['/settings/apps/SyntheticPrivateApp/permissions', 'settings/apps'],
+    ['/settings/SyntheticPrivateSection', 'settings'],
+    ['/owner/repository/settings/environments/SyntheticPrivateEnvironment', 'repository/settings/environments'],
+    ['/owner/repository/SyntheticPrivateRoute', 'repository'],
+    ['/organizations/SyntheticPrivateOrg/settings/secrets/SyntheticPrivateSecret', 'orgs/settings/secrets'],
+    ['/orgs/SyntheticPrivateOrg/SyntheticPrivateRoute', 'orgs'],
+    ['/apps/SyntheticPrivateApp', 'apps'],
+    ['/sponsors/SyntheticPrivateUser', 'sponsors']
+  ];
+  for (const [pathname, expected] of cases) {
+    assert.equal(core.classifyPage(pathname, dictionary.scopes).pageType, expected, pathname);
+  }
+  assert.equal(core.normalizePageType('https://example.test/private'), 'unknown');
+  assert.equal(core.normalizePageType(undefined), 'unknown');
+  assert.equal(core.normalizePageType('settings/apps/SyntheticPrivateApp'), 'settings/apps');
+});
+
 test('优先级为官方覆盖、页面词条、公共词条、正则词条', () => {
   const pageTranslator = core.createTranslator({ dictionary, pathname: '/settings/profile' });
   assert.equal(pageTranslator.translate('Settings').value, '个人设置');
@@ -60,6 +79,13 @@ test('翻译保留原始空白并支持标题', () => {
   assert.equal(translator.translate('\n  Save  ').value, '\n  保存  ');
   assert.equal(translator.translateTitle('Account settings').value, '账户设置');
   assert.equal(translator.translate('Unlisted phrase').matched, false);
+});
+
+test('明确保留英文的覆盖与真正未知词条可区分', () => {
+  const translator = core.createTranslator({ dictionary, overrides: { exact: { GitHub: 'GitHub' } } });
+  assert.equal(translator.translate('GitHub').matched, false);
+  assert.equal(translator.translate('GitHub').known, true);
+  assert.equal(translator.translate('Mystery Command').known, false);
 });
 
 test('漏译候选过滤 URL、代码、文件名、哈希和中文', () => {

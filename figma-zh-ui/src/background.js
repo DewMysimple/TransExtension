@@ -1,7 +1,11 @@
 'use strict';
 
+importScripts('core.js');
+const core = globalThis.FigmaZhCore;
+
 const DEFAULT_SETTINGS = Object.freeze({ enabled: true, showOriginal: true, auditEnabled: true });
 const MAX_AUDIT_ENTRIES = 1500;
+const AUDIT_PAGE_TYPES = new Set(['files', 'editor', 'community', 'settings', 'admin', 'developer', 'public']);
 let auditQueue = Promise.resolve();
 
 async function ensureDefaults() {
@@ -16,13 +20,15 @@ function sanitizeBatch(batch) {
   if (!Array.isArray(batch)) return [];
   return batch.slice(0, 250).flatMap((entry) => {
     const text = typeof entry?.text === 'string' ? entry.text.trim().replace(/\s+/g, ' ') : '';
-    const pageType = typeof entry?.pageType === 'string' ? entry.pageType.slice(0, 60) : 'unknown';
-    if (!text || text.length > 180 || !/[A-Za-z]/.test(text)) return [];
+    const pageType = AUDIT_PAGE_TYPES.has(entry?.pageType) ? entry.pageType : 'unknown';
+    if (!core.looksLikeEnglishUi(text)) return [];
     return [{ text, pageType }];
   });
 }
 
 async function recordAuditBatch(batch) {
+  const { settings = DEFAULT_SETTINGS } = await chrome.storage.local.get('settings');
+  if (settings.enabled === false || settings.auditEnabled === false) return { saved: 0 };
   const sanitized = sanitizeBatch(batch);
   if (!sanitized.length) return { saved: 0 };
   const { auditEntries = [] } = await chrome.storage.local.get('auditEntries');

@@ -1,4 +1,6 @@
-/* 人工审校的 Figma 常用简体中文术语，优先于社区词库。 */
+/* 人工审校的 Figma 常用简体中文术语，优先于社区词库。
+ * 新增场景的官方来源与回归样本：tests/fixtures/figma-ui-coverage.json。
+ */
 globalThis.FIGMA_ZH_OFFICIAL_OVERRIDES = Object.freeze({
   exact: Object.freeze({
     "Account": "账户",
@@ -11,6 +13,7 @@ globalThis.FIGMA_ZH_OFFICIAL_OVERRIDES = Object.freeze({
     "Cancel": "取消",
     "Comments": "评论",
     "Community": "社区",
+    "Continue to recovery codes": "继续查看恢复代码",
     "Create new": "新建",
     "Delete": "删除",
     "Design": "设计",
@@ -45,9 +48,11 @@ globalThis.FIGMA_ZH_OFFICIAL_OVERRIDES = Object.freeze({
     "Slides": "幻灯片",
     "Starred": "已加星标",
     "Shared folders": "共享文件夹",
+    "Show in folder": "在文件夹中显示",
     "Team": "团队",
     "Templates": "模板",
     "Trash": "回收站",
+    "Two-factor authentication": "两步验证",
     "Version history": "版本历史",
     "View settings": "查看设置",
     "Widgets": "小组件",
@@ -55,7 +60,12 @@ globalThis.FIGMA_ZH_OFFICIAL_OVERRIDES = Object.freeze({
   }),
   routes: Object.freeze({
     files: Object.freeze({
+      "+ Create": "+ 新建",
+      "+ Folder": "+ 文件夹",
       "All files": "所有文件",
+      "All teams": "所有团队",
+      "All workspaces": "所有工作区",
+      "Open folder dropdown": "打开文件夹菜单",
       "Recently viewed": "最近查看",
       "Shared files": "共享文件",
       "Shared folders": "共享文件夹",
@@ -66,6 +76,22 @@ globalThis.FIGMA_ZH_OFFICIAL_OVERRIDES = Object.freeze({
       "Date created": "创建日期"
     }),
     editor: Object.freeze({
+      "Add min width": "添加最小宽度",
+      "Add max width": "添加最大宽度",
+      "Add min height": "添加最小高度",
+      "Add max height": "添加最大高度",
+      "Remove min and max": "移除最小值和最大值",
+      "Quick actions": "快速操作",
+      "Open quick actions": "打开快速操作",
+      "Show and hide UI": "显示或隐藏界面",
+      "Timer, voting, and music": "计时器、投票和音乐",
+      "Voting": "投票",
+      "Spotlight": "聚焦演示",
+      "Stop timer": "停止计时器",
+      "Slides mode": "幻灯片模式",
+      "Presenter notes": "演讲者备注",
+      "Present in full screen": "全屏演示",
+      "Present with presenter notes": "使用演讲者备注演示",
       "Layers": "图层",
       "Properties": "属性",
       "Variables": "变量",
@@ -78,6 +104,9 @@ globalThis.FIGMA_ZH_OFFICIAL_OVERRIDES = Object.freeze({
       "Security": "安全",
       "Notifications": "通知",
       "Connected apps": "已连接的应用"
+    }),
+    admin: Object.freeze({
+      "Show trashed files": "显示回收站中的文件"
     })
   })
 });

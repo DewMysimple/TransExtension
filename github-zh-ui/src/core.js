@@ -13,6 +13,52 @@
     'password_reset', 'pricing', 'pulls', 'search', 'security', 'settings', 'signup',
     'sponsors', 'stars', 'topics', 'trending', 'users', 'watching'
   ]);
+  const REPOSITORY_PAGES = new Set([
+    'actions', 'activity', 'agents', 'attestations', 'blame', 'blob', 'branches',
+    'codespaces', 'commit', 'commits', 'community', 'compare', 'contribute',
+    'custom-properties', 'delete', 'deployments', 'discussions', 'edit', 'find',
+    'fork', 'forks', 'graphs', 'home', 'import', 'invitations', 'issues', 'labels',
+    'milestone', 'milestones', 'models', 'network', 'new', 'packages', 'pkgs',
+    'projects', 'pull', 'pulls', 'pulse', 'releases', 'rules', 'runs', 'search',
+    'security', 'settings', 'stargazers', 'subscription', 'tags', 'tasks',
+    'transfer', 'tree', 'upload', 'watchers', 'wiki'
+  ]);
+  const SETTINGS_PAGES = new Set([
+    'access', 'accessibility', 'actions', 'admin', 'appearance', 'applications',
+    'apps', 'audit-log', 'auth', 'billing', 'blocked_users', 'branch_protection_rules',
+    'branches', 'code_review_limits', 'codespaces', 'connections', 'copilot',
+    'credentials', 'deleted_repositories', 'dependabot_rules', 'developers',
+    'discussions', 'domains', 'education', 'emails', 'enterprises', 'environments',
+    'gpg', 'hooks', 'import-export', 'installations', 'interaction_limits',
+    'key_links', 'keys', 'member_privileges', 'models', 'moderators',
+    'notifications', 'oauth_application_policy', 'organizations', 'packages',
+    'pages', 'personal-access-token', 'personal-access-tokens', 'policies',
+    'profile', 'projects', 'publisher', 'reminders', 'replies', 'repositories',
+    'repository-defaults', 'roles', 'rules', 'sandboxes', 'secrets', 'security',
+    'security-log', 'security_analysis', 'sessions', 'sponsors-log', 'ssh',
+    'tag_protection', 'teams', 'tokens', 'variables'
+  ]);
+  const ORGANIZATION_PAGES = new Set([
+    'dashboard', 'invitations', 'new-team', 'outside-collaborators', 'packages',
+    'pending_collaborators', 'people', 'profile', 'projects', 'repositories',
+    'sponsoring', 'teams', 'topics'
+  ]);
+
+  // Audit categories are fixed vocabulary, never arbitrary URL segments.
+  function normalizePageType(value) {
+    const parts = typeof value === 'string' ? value.split('/') : [];
+    const [root, section, detail] = parts;
+    if (root === 'settings') return SETTINGS_PAGES.has(section) ? `settings/${section}` : 'settings';
+    if (root === 'repository' || root === 'orgs') {
+      if (section === 'settings') {
+        return SETTINGS_PAGES.has(detail) ? `${root}/settings/${detail}` : `${root}/settings`;
+      }
+      const knownPages = root === 'repository' ? REPOSITORY_PAGES : ORGANIZATION_PAGES;
+      return knownPages.has(section) ? `${root}/${section}` : root;
+    }
+    if (root === 'profile' || root === 'public') return root;
+    return RESERVED_ROOTS.has(root) ? root : 'unknown';
+  }
 
   function cleanSegments(pathname) {
     return String(pathname || '/')
@@ -46,7 +92,7 @@
       for (let length = 1; length <= rest.length; length += 1) {
         addExisting(candidates, availableScopes, `settings/${rest.slice(0, length).join('/')}`);
       }
-      return { pageType: rest.length ? `settings/${rest.join('/')}` : 'settings', candidates };
+      return { pageType: normalizePageType(`settings/${rest.join('/')}`), candidates };
     }
 
     if ((segments[0] === 'organizations' || segments[0] === 'orgs') && segments.length >= 2) {
@@ -58,12 +104,12 @@
           addExisting(candidates, availableScopes, `orgs/${rest.slice(0, length).join('/')}`);
         }
         return {
-          pageType: rest.length > 1 ? `orgs/settings/${rest.slice(1).join('/')}` : 'orgs/settings',
+          pageType: normalizePageType(`orgs/${rest.join('/')}`),
           candidates
         };
       }
       if (rest.length) addExisting(candidates, availableScopes, `orgs/${rest[0]}`);
-      return { pageType: rest.length ? `orgs/${rest[0]}` : 'orgs/profile', candidates };
+      return { pageType: normalizePageType(rest.length ? `orgs/${rest[0]}` : 'orgs/profile'), candidates };
     }
 
     const looksLikeRepository = segments.length >= 2 && !RESERVED_ROOTS.has(segments[0]);
@@ -76,7 +122,7 @@
           addExisting(candidates, availableScopes, `repository/${rest.slice(0, length).join('/')}`);
         }
         return {
-          pageType: rest.length > 1 ? `repository/settings/${rest.slice(1).join('/')}` : 'repository/settings',
+          pageType: normalizePageType(`repository/${rest.join('/')}`),
           candidates
         };
       }
@@ -84,7 +130,7 @@
         const route = rest[0] === 'pull' ? 'pull' : rest[0];
         addExisting(candidates, availableScopes, `repository/${route}`);
       }
-      return { pageType: rest.length ? `repository/${rest[0]}` : 'repository/home', candidates };
+      return { pageType: normalizePageType(rest.length ? `repository/${rest[0]}` : 'repository/home'), candidates };
     }
 
     if (segments.length === 1 && !RESERVED_ROOTS.has(segments[0])) {
@@ -94,7 +140,7 @@
 
     const pageKey = segments.slice(0, 2).join('/');
     addExisting(candidates, availableScopes, pageKey, segments[0]);
-    return { pageType: pageKey || 'public', candidates };
+    return { pageType: normalizePageType(pageKey || 'public'), candidates };
   }
 
   function splitWhitespace(value) {
@@ -146,7 +192,7 @@
         translated = regexTranslation(core);
         matchType = 'regex';
       }
-      if (translated === null || translated === core) return { matched: false, value };
+      if (translated === null || translated === core) return { matched: false, known: translated !== null, value };
       return { matched: true, value: `${before}${translated}${after}`, original: value, matchType };
     }
 
@@ -182,5 +228,31 @@
     return true;
   }
 
-  return Object.freeze({ classifyPage, createTranslator, looksLikeEnglishUi, splitWhitespace });
+  // Older releases stored dynamic route suffixes. Migrate records rather than
+  // discarding the report; the popup uses the same boundary before exporting.
+  function sanitizeAuditEntries(entries) {
+    if (!Array.isArray(entries)) return [];
+    const indexed = new Map();
+    for (const entry of entries) {
+      const text = typeof entry?.text === 'string' ? entry.text.trim() : '';
+      if (!looksLikeEnglishUi(text)) continue;
+      const count = Number(entry.count);
+      const firstSeen = typeof entry.firstSeen === 'string' ? entry.firstSeen : '';
+      const lastSeen = typeof entry.lastSeen === 'string' ? entry.lastSeen : '';
+      if (!Number.isFinite(count) || count < 1 || !Number.isFinite(Date.parse(firstSeen)) || !Number.isFinite(Date.parse(lastSeen))) continue;
+      const pageType = normalizePageType(entry.pageType);
+      const key = `${pageType}\u0000${text}`;
+      const current = indexed.get(key);
+      if (current) {
+        current.count = Math.min(current.count + Math.floor(count), 1_000_000);
+        if (Date.parse(firstSeen) < Date.parse(current.firstSeen)) current.firstSeen = firstSeen;
+        if (Date.parse(lastSeen) > Date.parse(current.lastSeen)) current.lastSeen = lastSeen;
+      } else {
+        indexed.set(key, { text, pageType, count: Math.min(Math.floor(count), 1_000_000), firstSeen, lastSeen });
+      }
+    }
+    return [...indexed.values()].sort((a, b) => Date.parse(b.lastSeen) - Date.parse(a.lastSeen));
+  }
+
+  return Object.freeze({ classifyPage, createTranslator, looksLikeEnglishUi, normalizePageType, sanitizeAuditEntries, splitWhitespace });
 });

@@ -6,6 +6,9 @@ import { fileURLToPath } from 'node:url';
 const scriptDir = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(scriptDir, '..');
 const errors = [];
+const args = process.argv.slice(2);
+const offline = args.includes('--offline');
+if (args.some((argument) => argument !== '--offline')) errors.push('只支持 --offline 参数。');
 
 async function read(relativePath) {
   return fs.readFile(path.join(rootDir, relativePath), 'utf8');
@@ -16,10 +19,19 @@ function check(condition, message) {
 }
 
 const manifest = JSON.parse(await read('manifest.json'));
+const packageJson = JSON.parse(await read('package.json'));
+const packageLock = JSON.parse(await read('package-lock.json'));
 check(manifest.manifest_version === 3, 'manifest_version 必须是 3。');
 check(JSON.stringify(manifest.host_permissions) === JSON.stringify(['https://github.com/*']), '主机权限必须仅包含 github.com。');
-check(manifest.permissions.includes('storage') && manifest.permissions.includes('activeTab'), '缺少 storage 或 activeTab 权限。');
-check(!manifest.permissions.some((permission) => ['cookies', 'history', 'downloads', 'webRequest'].includes(permission)), '清单包含禁止的高风险权限。');
+check(JSON.stringify([...(manifest.permissions ?? [])].sort()) === JSON.stringify(['activeTab', 'storage']), '权限必须仅包含 storage 和 activeTab。');
+check(!(manifest.optional_permissions?.length || manifest.optional_host_permissions?.length), '不得新增可选权限。');
+check(manifest.version === packageJson.version && manifest.version === packageLock.version && manifest.version === packageLock.packages?.['']?.version, 'manifest、package 与锁文件版本必须一致。');
+check(manifest.background?.service_worker === 'src/background.js' && manifest.action?.default_popup === 'src/popup.html', '后台或弹窗入口不正确。');
+check(manifest.content_scripts?.length === 1, '必须只有一组内容脚本。');
+const contentScript = manifest.content_scripts?.[0];
+check(JSON.stringify(contentScript?.matches) === JSON.stringify(manifest.host_permissions), '内容脚本匹配范围必须等于目标主机权限。');
+check(JSON.stringify(contentScript?.js) === JSON.stringify(['generated/dictionary.js', 'src/official-overrides.js', 'src/core.js', 'src/content.js']), '内容脚本加载顺序必须为 dictionary → overrides → core → content。');
+check(JSON.stringify(contentScript?.css) === JSON.stringify(['src/content.css']) && contentScript?.run_at === 'document_start', '内容脚本样式或加载时机不正确。');
 
 const packagedFiles = [
   'manifest.json', 'src/background.js', 'src/content.js', 'src/content.css',
@@ -34,9 +46,12 @@ for (const relativePath of packagedFiles) {
 
 const sources = JSON.parse(await read('generated/sources.json'));
 check(sources.runtimeNetworkRequests === false, '来源元数据必须声明运行时不联网。');
-check(Date.now() - Date.parse(sources.generatedAt) <= 24 * 60 * 60 * 1000, '来源元数据超过 24 小时。');
-check(sources.sources.length === 4, '来源仓库数量不正确。');
-for (const source of sources.sources) check(/^[a-f0-9]{40}$/.test(source.sha), `${source.id} 的 SHA 无效。`);
+const generatedAt = Date.parse(sources.generatedAt);
+check(Number.isFinite(generatedAt) && generatedAt <= Date.now(), '来源生成日期无效或位于未来。');
+if (!offline && Number.isFinite(generatedAt)) check(Date.now() - generatedAt <= 24 * 60 * 60 * 1000, '来源元数据超过 24 小时。');
+const upstreamSources = Array.isArray(sources.sources) ? sources.sources : [];
+check(JSON.stringify(upstreamSources.map((source) => source.repo).sort()) === JSON.stringify(['github/docs', 'maboloshi/github-chinese', 'primer/react', 'primer/view_components']), '来源仓库集合不正确。');
+for (const source of upstreamSources) check(/^[a-f0-9]{40}$/.test(source.sha), `${source.id} 的 SHA 无效。`);
 
 const dictionarySandbox = { globalThis: {} };
 vm.createContext(dictionarySandbox);
@@ -46,14 +61,24 @@ check(dictionary?.meta?.license === 'GPL-3.0-only', '词库许可证元数据无
 check(Object.keys(dictionary?.base?.exact ?? {}).length > 5_000, '基础词库数量异常。');
 check(Object.keys(dictionary?.scopes ?? {}).length > 200, '页面词库数量异常。');
 
-for (const runtimeFile of ['src/background.js', 'src/content.js', 'src/core.js', 'src/popup.js']) {
-  const source = await read(runtimeFile);
-  check(!/\b(fetch|XMLHttpRequest|WebSocket|EventSource)\s*\(/.test(source), `${runtimeFile} 包含运行时网络调用。`);
+async function checkRuntime(directory) {
+  for (const entry of await fs.readdir(path.join(rootDir, directory), { withFileTypes: true })) {
+    const runtimeFile = `${directory}/${entry.name}`;
+    if (entry.isDirectory()) await checkRuntime(runtimeFile);
+    else if (entry.name.endsWith('.js')) {
+      const source = await read(runtimeFile);
+      try { new vm.Script(source, { filename: runtimeFile }); }
+      catch (error) { errors.push(`${runtimeFile} 存在语法错误：${error.message}`); }
+      check(!/\b(fetch|XMLHttpRequest|WebSocket|EventSource|sendBeacon)\s*\(/.test(source), `${runtimeFile} 包含运行时网络调用。`);
+      check(!/\b(?:importScripts|import)\s*\(\s*['"](?:https?:)?\/\//.test(source), `${runtimeFile} 包含远程脚本导入。`);
+    }
+  }
 }
+await checkRuntime('src');
 
 if (errors.length) {
   console.error(errors.map((error) => `- ${error}`).join('\n'));
   process.exitCode = 1;
 } else {
-  console.log(`验证通过：${Object.keys(dictionary.base.exact).length} 个基础词条，${Object.keys(dictionary.scopes).length} 个页面词库。`);
+  console.log(`${offline ? '离线静态验证通过（未检查来源 24 小时时效，不代表可发布）' : '验证通过'}：${Object.keys(dictionary.base.exact).length} 个基础词条，${Object.keys(dictionary.scopes).length} 个页面词库。`);
 }

@@ -1,0 +1,131 @@
+{
+  "description": "Reviewed fixed UI labels, not a claim of complete live-site coverage. Add a source and a regression case when filling a gap.",
+  "reviewedAt": "2026-09-20",
+  "scenarios": [
+    {
+      "name": "文件浏览器与文件夹",
+      "pathname": "/files/team/example/recently-viewed",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/14381406380183-Guide-to-the-file-browser",
+        "https://help.figma.com/hc/en-us/articles/360038006494-Create-and-manage-folders",
+        "https://help.figma.com/hc/en-us/articles/360039957674-View-and-join-teams"
+      ],
+      "cases": {
+        "Recently viewed": "最近查看",
+        "Shared with you": "与你共享",
+        "Drafts": "草稿",
+        "All folders": "所有文件夹",
+        "All teams": "所有团队",
+        "All workspaces": "所有工作区",
+        "Show in folder": "在文件夹中显示",
+        "Open folder dropdown": "打开文件夹菜单",
+        "Change folder color": "更改文件夹颜色",
+        "+ Folder": "+ 文件夹",
+        "+ Create": "+ 新建",
+        "Who has access": "谁可以访问"
+      }
+    },
+    {
+      "name": "Design 编辑器与自动布局",
+      "pathname": "/design/example/Example",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/15297425105303-Explore-design-files",
+        "https://help.figma.com/hc/en-us/articles/360040451373-Guide-to-auto-layout",
+        "https://help.figma.com/hc/en-us/articles/5665442977431-Select-keyboard-layout"
+      ],
+      "cases": {
+        "Layers": "图层",
+        "Properties": "属性",
+        "Auto layout": "自动布局",
+        "Add min width": "添加最小宽度",
+        "Add max width": "添加最大宽度",
+        "Add min height": "添加最小高度",
+        "Add max height": "添加最大高度",
+        "Remove min and max": "移除最小值和最大值",
+        "Quick actions": "快速操作",
+        "Open quick actions": "打开快速操作",
+        "Show and hide UI": "显示或隐藏界面",
+        "Show left sidebar": "显示左侧边栏"
+      }
+    },
+    {
+      "name": "FigJam 协作控件",
+      "pathname": "/board/example/Example",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/15300412458647-Explore-FigJam-files",
+        "https://help.figma.com/hc/en-us/articles/4402269549591-Stay-on-track-with-the-timer-in-FigJam"
+      ],
+      "cases": {
+        "Timer, voting, and music": "计时器、投票和音乐",
+        "Voting": "投票",
+        "Spotlight": "聚焦演示",
+        "Start timer": "启动计时器",
+        "Pause timer": "暂停计时器",
+        "Stop timer": "停止计时器"
+      }
+    },
+    {
+      "name": "Slides 模式与演示",
+      "pathname": "/slides/example/Example",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/24170630629911-Explore-Figma-Slides",
+        "https://help.figma.com/hc/en-us/articles/24338209202327-Present-a-slide-deck"
+      ],
+      "cases": {
+        "Slide view": "幻灯片视图",
+        "Grid view": "网格视图",
+        "Slides mode": "幻灯片模式",
+        "Design mode": "设计模式",
+        "Presenter notes": "演讲者备注",
+        "Present in full screen": "全屏演示",
+        "Present with presenter notes": "使用演讲者备注演示"
+      }
+    },
+    {
+      "name": "账户设置",
+      "pathname": "/settings",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/1500006061462-View-and-manage-account-settings",
+        "https://help.figma.com/hc/en-us/articles/360039817634-Enable-two-factor-authentication-2FA"
+      ],
+      "cases": {
+        "Account settings": "账户设置",
+        "Security": "安全",
+        "Notifications": "通知",
+        "Two-factor authentication": "两步验证",
+        "Enable two-factor authentication": "启用两步验证",
+        "Continue to recovery codes": "继续查看恢复代码"
+      }
+    },
+    {
+      "name": "团队管理",
+      "pathname": "/admin/example",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/360039957374-Get-started-with-organizations",
+        "https://help.figma.com/hc/en-us/articles/4420549259799-Manage-drafts-of-removed-users"
+      ],
+      "cases": {
+        "Admin": "管理",
+        "Billing": "账单",
+        "Members": "成员",
+        "Content": "内容",
+        "Unassigned drafts": "未分配的草稿",
+        "Show trashed files": "显示回收站中的文件"
+      }
+    },
+    {
+      "name": "Community 固定导航",
+      "pathname": "/community",
+      "references": [
+        "https://help.figma.com/hc/en-us/articles/14381406380183-Guide-to-the-file-browser",
+        "https://help.figma.com/hc/en-us/articles/1500006061462-View-and-manage-account-settings"
+      ],
+      "cases": {
+        "Community": "社区",
+        "Community profile": "社区个人主页",
+        "Plugins": "插件",
+        "Widgets": "小组件"
+      }
+    }
+  ]
+}

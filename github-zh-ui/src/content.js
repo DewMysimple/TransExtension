@@ -12,7 +12,8 @@
   const DEFAULT_SETTINGS = Object.freeze({ enabled: true, showOriginal: true, auditEnabled: true });
   const EXCLUDED_SELECTOR = [
     'pre', 'code', 'kbd', 'samp', 'script', 'style', 'textarea', 'title',
-    '[contenteditable="true"]', '[role="textbox"]',
+    '[contenteditable]:not([contenteditable="false"])', '[role="textbox"]',
+    '[translate="no"]', '[data-github-zh-ui]',
     '.markdown-body', '.js-comment-body', '.comment-body', '.js-preview-body',
     '[data-testid="issue-body"]', '[data-testid="comment-body"]',
     '[data-testid="issue-title"]', '.js-issue-title', '.markdown-title',
@@ -38,6 +39,9 @@
   ].join(',');
   const AUDIT_SETTINGS_SELECTOR = 'h1,h2,h3,h4,p,.note,.FormControl-caption,.Box-title';
   const TRANSLATABLE_ATTRIBUTES = ['placeholder', 'data-confirm'];
+  const PROTECTION_ATTRIBUTES = [
+    'id', 'class', 'contenteditable', 'role', 'translate', 'data-testid', 'data-hovercard-type', 'itemprop', 'href', 'type'
+  ];
 
   let settings = { ...DEFAULT_SETTINGS };
   let translator = core.createTranslator({ dictionary, overrides, pathname: location.pathname });
@@ -48,6 +52,7 @@
   let titleRecord = null;
   const translatedTextNodes = new Map();
   const translatedAttributes = new Map();
+  const tooltipHosts = new Set();
   const pendingRoots = new Set();
   const pendingAudit = new Map();
   const currentUnknown = new Set();
@@ -65,6 +70,7 @@
     const host = tooltipHostFor(element);
     const clean = String(original).trim();
     if (!host || !clean) return;
+    tooltipHosts.add(host);
     const previous = (host.dataset.githubZhOriginal || '').split(' · ').filter(Boolean);
     if (!previous.includes(clean) && previous.length < 3) previous.push(clean);
     host.dataset.githubZhOriginal = previous.join(' · ');
@@ -89,14 +95,39 @@
     return isSettingsPage() && Boolean(element.closest(AUDIT_SETTINGS_SELECTOR));
   }
 
-  function queueAudit(text, element) {
-    const clean = String(text).trim().replace(/\s+/g, ' ');
+  function normalizeAuditText(text) {
+    return String(text ?? '').trim().replace(/\s+/g, ' ');
+  }
+
+  function queueAudit(text, element, source, attribute = null) {
+    const clean = normalizeAuditText(text);
     if (!isAuditable(element, clean)) return;
     const key = `${translator.pageType}\u0000${clean}`;
     currentUnknown.add(key);
-    pendingAudit.set(key, { text: clean, pageType: translator.pageType });
+    let entry = pendingAudit.get(key);
+    if (!entry) {
+      entry = { text: clean, pageType: translator.pageType, sources: new Map() };
+      pendingAudit.set(key, entry);
+    }
+    if (!entry.sources.has(source)) entry.sources.set(source, new Set());
+    entry.sources.get(source).add(attribute);
     markAuditUnknown(element);
     scheduleAuditFlush();
+  }
+
+  function hasCurrentAuditSource(entry) {
+    for (const [source, attributes] of entry.sources) {
+      if (!source.isConnected) continue;
+      for (const attribute of attributes) {
+        const element = attribute === null ? source.parentElement : source;
+        const value = attribute === null ? source.nodeValue : element.getAttribute(attribute);
+        if (normalizeAuditText(value) !== entry.text || !isAuditable(element, entry.text)) continue;
+        if (attribute !== null && !element.matches(AUDIT_CONTROL_SELECTOR)) continue;
+        if (attribute === 'value' && !['button', 'submit', 'reset'].includes(element.type)) continue;
+        return true;
+      }
+    }
+    return false;
   }
 
   let auditFlushTimer = 0;
@@ -107,14 +138,38 @@
 
   function flushAudit() {
     auditFlushTimer = 0;
-    if (!pendingAudit.size || !settings.auditEnabled) return;
-    const entries = [...pendingAudit.values()];
+    if (!settings.enabled || !settings.auditEnabled) {
+      pendingAudit.clear();
+      return;
+    }
+    if (!pendingAudit.size) return;
+    const pageType = core.classifyPage(location.pathname, dictionary.scopes).pageType;
+    const entries = [];
+    for (const [key, entry] of pendingAudit) {
+      if (entry.pageType === pageType && hasCurrentAuditSource(entry)) {
+        entries.push({ text: entry.text, pageType: entry.pageType });
+      } else {
+        currentUnknown.delete(key);
+      }
+    }
+    // DOM references live only until this flush or a setting/route/rescan reset.
     pendingAudit.clear();
+    if (!entries.length) return;
     try {
       chrome.runtime.sendMessage({ type: 'audit:recordBatch', entries }, () => void chrome.runtime.lastError);
     } catch {
       // The extension may have been reloaded while this page remained open.
     }
+  }
+
+  function clearAuditState() {
+    window.clearTimeout(auditFlushTimer);
+    auditFlushTimer = 0;
+    pendingAudit.clear();
+    currentUnknown.clear();
+    document.querySelectorAll('[data-github-zh-unknown]').forEach((element) => {
+      delete element.dataset.githubZhUnknown;
+    });
   }
 
   function processTextNode(node) {
@@ -134,8 +189,8 @@
       node.nodeValue = result.value;
       translatedCount += 1;
       addOriginalTooltip(node.parentElement, current);
-    } else {
-      queueAudit(current, node.parentElement);
+    } else if (!result.known) {
+      queueAudit(current, node.parentElement, node);
     }
   }
 
@@ -161,8 +216,8 @@
       element.setAttribute(attribute, result.value);
       translatedCount += 1;
       addOriginalTooltip(element, value);
-    } else if (element.matches(AUDIT_CONTROL_SELECTOR)) {
-      queueAudit(value, element);
+    } else if (!result.known && element.matches(AUDIT_CONTROL_SELECTOR)) {
+      queueAudit(value, element, element, attribute);
     }
   }
 
@@ -210,29 +265,77 @@
 
   function resetForRoute() {
     restoreAll();
+    clearAuditState();
+    hideTooltip();
     translator = core.createTranslator({ dictionary, overrides, pathname: location.pathname });
     lastLocation = location.href;
     translatedCount = 0;
     currentUnknown.clear();
+    pendingRoots.clear();
+    if (document.body) pendingRoots.add(document.body);
+  }
+
+  function restoreText(node, record) {
+    if (node.nodeValue === record.translated) node.nodeValue = record.original;
+  }
+
+  function restoreAttributes(element, records) {
+    for (const [attribute, record] of records) {
+      if (element.getAttribute(attribute) === record.translated) element.setAttribute(attribute, record.original);
+    }
+  }
+
+  // A framework can remove, repurpose, or move nodes into protected content.
+  // Release their translation records before scanning the next DOM state.
+  function reconcileTranslations() {
+    for (const [node, record] of translatedTextNodes) {
+      if (!node.isConnected || isExcludedElement(node.parentElement)) {
+        restoreText(node, record);
+        translatedTextNodes.delete(node);
+      } else if (node.nodeValue !== record.translated) {
+        translatedTextNodes.delete(node);
+      }
+    }
+    for (const [element, records] of translatedAttributes) {
+      if (!element.isConnected || isExcludedElement(element)) {
+        restoreAttributes(element, records);
+        translatedAttributes.delete(element);
+      } else {
+        for (const [attribute, record] of records) {
+          if (attribute === 'value' && !['button', 'submit', 'reset'].includes(element.type)) {
+            if (element.getAttribute(attribute) === record.translated) element.setAttribute(attribute, record.original);
+            records.delete(attribute);
+            continue;
+          }
+          if (element.getAttribute(attribute) !== record.translated) records.delete(attribute);
+        }
+        if (!records.size) translatedAttributes.delete(element);
+      }
+    }
+  }
+
+  function refreshOriginalTooltips() {
+    for (const host of tooltipHosts) delete host.dataset.githubZhOriginal;
+    tooltipHosts.clear();
+    for (const [node, record] of translatedTextNodes) addOriginalTooltip(node.parentElement, record.original);
+    for (const [element, records] of translatedAttributes) {
+      for (const record of records.values()) addOriginalTooltip(element, record.original);
+    }
   }
 
   function restoreAll() {
     for (const [node, record] of translatedTextNodes) {
-      if (node.isConnected && node.nodeValue === record.translated) node.nodeValue = record.original;
+      restoreText(node, record);
     }
     translatedTextNodes.clear();
     for (const [element, records] of translatedAttributes) {
-      if (!element.isConnected) continue;
-      for (const [attribute, record] of records) {
-        if (element.getAttribute(attribute) === record.translated) element.setAttribute(attribute, record.original);
-      }
+      restoreAttributes(element, records);
     }
     translatedAttributes.clear();
     if (titleRecord && document.title === titleRecord.translated) document.title = titleRecord.original;
     titleRecord = null;
-    document.querySelectorAll('[data-github-zh-original]').forEach((element) => {
-      delete element.dataset.githubZhOriginal;
-    });
+    for (const host of tooltipHosts) delete host.dataset.githubZhOriginal;
+    tooltipHosts.clear();
     document.querySelectorAll('[data-github-zh-unknown]').forEach((element) => {
       delete element.dataset.githubZhUnknown;
     });
@@ -241,11 +344,16 @@
   function performScan() {
     scanTimer = 0;
     if (location.href !== lastLocation) resetForRoute();
-    if (!settings.enabled) return;
+    if (!settings.enabled) {
+      pendingRoots.clear();
+      return;
+    }
+    reconcileTranslations();
     const roots = pendingRoots.size ? [...pendingRoots] : [document.body];
     pendingRoots.clear();
     for (const root of roots) processRoot(root);
     translateDocumentTitle();
+    refreshOriginalTooltips();
   }
 
   function scheduleScan(root = document.body) {
@@ -258,6 +366,7 @@
       if (mutation.type === 'characterData') scheduleScan(mutation.target);
       if (mutation.type === 'attributes') scheduleScan(mutation.target);
       for (const node of mutation.addedNodes ?? []) scheduleScan(node);
+      if (mutation.removedNodes?.length) scheduleScan(mutation.target);
     }
   });
 
@@ -266,6 +375,7 @@
     if (!tooltip && document.body) {
       tooltip = document.createElement('div');
       tooltip.id = 'github-zh-ui-original-tooltip';
+      tooltip.dataset.githubZhUi = 'true';
       tooltip.setAttribute('role', 'tooltip');
       document.body.append(tooltip);
     }
@@ -284,9 +394,10 @@
     if (!original) return;
     window.clearTimeout(tooltipTimer);
     tooltipTimer = window.setTimeout(() => {
+      if (!settings.enabled || !settings.showOriginal || !target.isConnected || !target.dataset.githubZhOriginal) return;
       const tooltip = ensureTooltip();
-      if (!tooltip || !target.isConnected) return;
-      tooltip.textContent = original;
+      if (!tooltip) return;
+      tooltip.textContent = target.dataset.githubZhOriginal;
       tooltip.dataset.visible = 'true';
       const rect = target.getBoundingClientRect();
       const top = Math.min(window.innerHeight - tooltip.offsetHeight - 8, rect.bottom + 8);
@@ -309,12 +420,20 @@
   document.addEventListener('turbo:before-render', () => restoreAll(), true);
   document.addEventListener('turbo:render', () => scheduleScan(document.body), true);
   document.addEventListener('turbo:load', () => scheduleScan(document.body), true);
+  window.addEventListener('popstate', () => scheduleScan(document.body));
+  window.addEventListener('hashchange', () => scheduleScan(document.body));
+  // History changes need not emit Turbo or DOM events in an isolated script.
+  window.setInterval(() => {
+    if (location.href !== lastLocation) scheduleScan(document.body);
+  }, 500);
 
   chrome.storage.onChanged.addListener((changes, areaName) => {
     if (areaName !== 'local' || !changes.settings) return;
     const wasEnabled = settings.enabled;
     settings = { ...DEFAULT_SETTINGS, ...changes.settings.newValue };
     document.documentElement.dataset.githubZhAudit = String(settings.auditEnabled);
+    if (!settings.enabled || !settings.auditEnabled) clearAuditState();
+    if (!settings.enabled || !settings.showOriginal) hideTooltip();
     if (wasEnabled && !settings.enabled) {
       restoreAll();
       hideTooltip();
@@ -337,6 +456,7 @@
     }
     if (message?.type === 'content:rescan') {
       restoreAll();
+      clearAuditState();
       translatedCount = 0;
       currentUnknown.clear();
       scheduleScan(document.body);
@@ -355,7 +475,7 @@
       subtree: true,
       characterData: true,
       attributes: true,
-      attributeFilter: [...TRANSLATABLE_ATTRIBUTES, 'value']
+      attributeFilter: [...TRANSLATABLE_ATTRIBUTES, ...PROTECTION_ATTRIBUTES, 'value']
     });
     if (document.body) scheduleScan(document.body);
     else document.addEventListener('DOMContentLoaded', () => scheduleScan(document.body), { once: true });
