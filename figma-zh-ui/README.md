@@ -65,6 +65,8 @@ npm run package
 
 普通源码修复使用 `npm ci`、`npm test` 和 `npm run verify:offline`，无需刷新上游。`verify:offline` 保留权限、离线约束、加载顺序、版本、来源结构和交付文件检查，仅跳过来源年龄；发布用的 `npm run verify` 仍要求 24 小时时效。跨插件维护可在仓库根目录运行 `npm run check`，定位漏译的方法见 [维护指南](../docs/maintenance.md)。
 
+修改扩展加载、后台、设置、消息或导出时，在根目录安装开发依赖后运行 `npx playwright install --no-shell chromium` 和 `npm run test:browser`。测试使用原始清单和真实扩展 API，页面为合成 fixture，不能替代下方真实站点验收。
+
 ## 验收建议
 
 在 Chrome/Edge 加载本次修改后的目录，按下表记录实际可访问的页面；无权限或未执行的页面单独标记为未验收。

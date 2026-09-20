@@ -23,11 +23,31 @@ jobs:
           node-version: '22'
           cache: npm
           cache-dependency-path: |
+            package-lock.json
             figma-zh-ui/package-lock.json
             github-zh-ui/package-lock.json
+      - name: Install shared test dependencies
+        run: npm ci
       - name: Install Figma test dependencies
         run: npm ci --prefix figma-zh-ui
       - name: Install GitHub test dependencies
         run: npm ci --prefix github-zh-ui
       - name: Test both extensions, static policies and memory
         run: npm run check
+
+  browser:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+      - name: Install shared test dependencies
+        run: npm ci
+      - name: Install testing Chromium
+        run: npx playwright install --with-deps --no-shell chromium
+      - name: Test both installed MV3 extensions
+        run: npm run test:browser

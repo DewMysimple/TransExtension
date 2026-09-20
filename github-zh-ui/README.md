@@ -79,6 +79,8 @@ npm run package
 
 ## 开发与许可证
 
+修改扩展加载、后台、设置、消息或导出时，在仓库根目录执行 `npm ci`、`npx playwright install --no-shell chromium`、`npm run test:browser`。测试使用原始清单、真实扩展 API 和合成页面，两个插件仍可独立安装与打包；真实站点验收按上方矩阵执行。
+
 自动测试涵盖词条优先级、路由分类、空白保留、标题、漏译过滤、动态 DOM、用户内容排除和关闭后的英文恢复。
 
 本项目按 GPL-3.0-only 分发。第三方来源和许可说明见 [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md)。

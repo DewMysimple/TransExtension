@@ -17,7 +17,7 @@ TransExtension 是面向特定网站的简体中文界面翻译扩展集合。�
 TransExtension/
 ├── AGENTS.md                 # 全仓 Agent、工程记忆与交付规则
 ├── README.md                 # 总项目入口
-├── package.json              # 双插件统一质量检查入口，无运行时依赖
+├── package.json              # 双插件统一质量入口，仅含开发测试依赖
 ├── scripts/                  # 仅用于开发的跨插件检查编排
 ├── tests/                    # 两个独立验证器的共享契约回归
 ├── docs/maintenance.md       # 漏译定位、修改边界与回归方法
@@ -41,12 +41,13 @@ TransExtension/
 需要 Node.js 22 或更高版本，以及 Python 3（工程记忆检查使用标准库）。在仓库根目录执行：
 
 ```powershell
+npm ci
 npm ci --prefix figma-zh-ui
 npm ci --prefix github-zh-ui
 npm run check
 ```
 
-根目录没有依赖，无需安装；两个插件分别使用自己的锁文件和 `node_modules`。`check` 依次执行门禁回归、两个插件的 `npm test`、`verify:offline` 和工程记忆检查；任何一步失败都会返回非零状态，并继续展示其他检查结果。GitHub Actions 在 Windows 和 Linux 的 Node.js 22 环境运行相同入口。
+根目录的 Playwright 依赖只用于浏览器测试；两个插件仍分别使用自己的锁文件和 `node_modules`，独立安装或打包不依赖根目录。`check` 依次执行门禁回归、两个插件的 `npm test`、`verify:offline` 和工程记忆检查；任何一步失败都会返回非零状态，并继续展示其他检查结果。GitHub Actions 在 Windows 和 Linux 的 Node.js 22 环境运行相同入口，并额外在 Linux 验证真实 MV3 扩展加载。
 
 日常只修改一个插件时，可进入其目录运行 `npm test` 和 `npm run verify:offline`。离线静态验证检查最小权限、主机范围、内容脚本加载顺序、版本一致性、交付文件、来源结构、词库规模、JavaScript 语法和常见联网调用；不会下载或改写词库。静态扫描是回归门禁，不能替代代码审查和浏览器验收。
 
@@ -61,7 +62,16 @@ npm run package
 
 漏译问题应先判断是缺词、上下文保护、文本结构还是动态生命周期问题，再选择修改位置；具体流程与回归要求见 [维护指南](./docs/maintenance.md)。完整安装、权限与人工验收步骤见各插件自己的 README。自动检查通过不代表真实页面已全部覆盖或已通过发布验收。
 
-本机装有 Chrome 或 Edge 时，可以额外运行浏览器合成冒烟，参数使用浏览器可执行文件的绝对路径，例如：
+验证实际扩展加载、后台、存储、消息和弹窗导出时，在根目录运行：
+
+```powershell
+npx playwright install --no-shell chromium
+npm run test:browser
+```
+
+这组测试使用独立临时浏览器配置，加载两个插件原始 manifest，真实执行扩展 API，并将目标域页面拦截为合成界面；不读取日常浏览器配置，也不需要网站账号。它能验证安装与模块连接，但不能证明登录后站点的所有 DOM、工具栏弹窗定位或 `activeTab` 用户手势行为；这些仍须按子项目 README 人工验收。使用测试 Chromium 是因为 [当前 Chrome/Edge 不支持测试所需的自动侧载参数](https://playwright.dev/docs/chrome-extensions)。
+
+本机装有 Chrome 或 Edge 时，也可以运行较轻量的 DOM 合成冒烟，参数使用浏览器可执行文件的绝对路径，例如：
 
 ```powershell
 node scripts/browser-smoke.mjs "C:\Program Files\Google\Chrome\Application\chrome.exe"

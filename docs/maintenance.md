@@ -44,12 +44,22 @@
 根目录首次准备环境：
 
 ```powershell
+npm ci
 npm ci --prefix figma-zh-ui
 npm ci --prefix github-zh-ui
 npm run check
 ```
 
 单插件可以独立运行 `npm test` 和 `npm run verify:offline`。根 `npm run test:tooling` 单独验证共同门禁，`npm run check:memory` 单独检查工程记忆。
+
+根开发依赖只用于浏览器测试，不进入任何扩展运行包。涉及 manifest 加载、后台、消息、设置同步、弹窗或本地报告导出时，再运行：
+
+```powershell
+npx playwright install --no-shell chromium
+npm run test:browser
+```
+
+`tests/browser/extensions.spec.mjs` 用同一组流程测试两个插件的原始 MV3 清单、独立脚本环境、保护边界、非目标域不注入、动态导航、真实 storage/onChanged/runtime 消息、弹窗启停及导出/清空。所有网页响应由测试提供，扩展 API 不使用替身，弹窗以扩展页面方式打开；真实站点 DOM 和工具栏弹窗用户手势仍属于人工验收。CI 将这层作为单独 Linux 任务，保留 Windows/Linux 的快速 `check`。浏览器下载只发生在开发环境，扩展运行时仍保持离线。
 
 `verify:offline` 只跳过 24 小时来源年龄要求；无效/未来日期、无效 SHA、权限扩张、内容脚本范围/顺序变化、版本不一致、缺文件和静态检查错误仍会失败。它不会自动刷新上游，也不提供发布证明。`verify` 和现有打包脚本继续保留 24 小时来源要求。
 

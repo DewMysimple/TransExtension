@@ -17,6 +17,7 @@ supersedes: null
 
 | 日期 | 项目 | 影响项目 | 类型 | 目标 | 页面状态 | 主题 | 日志 |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| 2026-09-20 | trans-extension | figma-zh-ui, github-zh-ui | test | 继续用户的双插件可维护性目标，补上此前 DOM 合成测试使用 Chrome API 替身、无法证明扩展模块接通的缺口。 | archived | trans-extension-real-mv3-browser-regressions | [[日志/2026-09-20-补充真实MV3扩展浏览器回归与CI.md\|2026-09-20｜补充真实 MV3 扩展浏览器回归与 CI]] |
 | 2026-09-20 | trans-extension | figma-zh-ui, github-zh-ui | bug | 全面排查 Figma 多场景漏译，同时降低两个独立扩展继续修改时的回归风险。 | archived | trans-extension-translation-coverage-and-regression-gates | [[日志/2026-09-20-修复Figma漏译并建立双插件回归门禁.md\|2026-09-20｜修复 Figma 漏译并建立双插件回归门禁]] |
 | 2026-09-11 | trans-extension | figma-zh-ui, github-zh-ui | maintenance | 将工程记忆组件从仓库根层散列目录收拢到 `wiki_memory/`，保持根项目治理入口和插件目录边界清晰。 | archived | trans-extension-memory-directory-layout | [[日志/2026-09-11-将工程记忆收拢至wiki_memory.md\|2026-09-11｜将工程记忆收拢至 wiki_memory]] |
 | 2026-09-10 | trans-extension | figma-zh-ui, github-zh-ui | maintenance | 建立根级统一工程记忆、分层 Agent 规则和根 Git 仓库，并完成首次远程交付。 | archived | trans-extension-initialize-memory-and-git | [[日志/2026-09-10-初始化统一工程记忆与Git仓库.md\|2026-09-10｜初始化统一工程记忆与 Git 仓库]] |

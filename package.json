@@ -5,9 +5,13 @@
   "scripts": {
     "check": "node scripts/check-projects.mjs",
     "test:tooling": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test",
     "check:memory": "python -X utf8 wiki_memory/工具/memory_lint.py check"
   },
   "engines": {
     "node": ">=22"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
   }
 }
